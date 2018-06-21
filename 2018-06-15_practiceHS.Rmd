@@ -15,12 +15,13 @@ library(lubridate)
 library(dplyr)
 library(ggplot2)
 library(tidyr)
+library(data.table)
 ```
 
 ```{r}
 dat<-fread("https://raw.githubusercontent.com/HannahHChu/Proteome_stability_project/master/Data/2018-06-21_thermal_assays_masterdatasheet.csv")
 
-glimpse(dat)
+#glimpse(dat)
 ```
 
 
@@ -30,42 +31,84 @@ rtime<- dat$kd_time
 time<-lubridate::minute(ms(rtime))+lubridate::second(ms(rtime))/60
 #time
 
-dat$new.labels <- paste(dat$line, dat$pos, sep="")
-
-
+#Adding new column of correct time
+dat$time<-time
 ```
 
 # Creating the Data Frame
 ```{r}
-y <- c(c37,c38, c38.5, c39)
-df<-data.frame(c37, c38, c38.5, c39)
-df <- as.numeric(as.character(c37, c38, c38.5, c39))
-df.long <- gather(df, temp, y)
-df.long$temp<- as.numeric(temp)
-df.long
+df<-data.frame(dat$kd_temp, dat$time, dat$treatment, dat$line)
+
+#filtering out the non-static practice trials
+staths<- df%>%
+          filter(dat$treatment == "static")
 ```
 
 # Figures
 ```{r}
-line<- ggplot(df.long,aes(x=temp,y=y, colour=temp))+geom_point()+
+#Overview of static HS 
+staticoverview <- ggplot(staths,aes(x=dat.kd_temp,y=dat.time))+geom_point()+
   labs(x = "KD Temperature (ºC)", y = "KD time (min)") + theme(
         axis.ticks.x=element_blank(),legend.position="bottom",
         axis.ticks.y=element_blank(),panel.background = element_blank(),
         panel.grid.major = element_blank(),panel.grid.minor =
-          element_blank(),axis.text=element_text(size=7),text=element_text(size=15))+geom_smooth(model="lm")  + coord_cartesian(ylim = c(0,200))
-line
+          element_blank(),axis.text=element_text(size=9),text=element_text(size=15))+geom_smooth(method="auto", se=F)
+staticoverview 
 
-ex<-ggplot(df.long,aes(x=temp,y=y, colour=temp))+geom_point()+
+#Static HS based on line
+p<- ggplot(staths,aes(x=dat.kd_temp,y=dat.time, colour=dat.line))+geom_point()+
   labs(x = "KD Temperature (ºC)", y = "KD time (min)") + theme(
         axis.ticks.x=element_blank(),legend.position="bottom",
         axis.ticks.y=element_blank(),panel.background = element_blank(),
         panel.grid.major = element_blank(),panel.grid.minor =
-          element_blank(),axis.text=element_text(size=7),text=element_text(size=15))+geom_smooth(aes(group = "Subject"), method = "loess", se = T)
-ex
+          element_blank(),axis.text=element_text(size=9),text=element_text(size=15))+geom_smooth(method="auto", se=F)
+fig <- p + scale_colour_discrete(name = "lines")
+fig
 
+#Overview of slow ramp
+slowdat <- df%>%
+  filter(dat$treatment == "slow", dat$kd_temp > "37")
+
+slowoverview <- ggplot(slowdat,aes(x=dat.kd_temp,y=dat.time))+geom_point()+
+  labs(x = "KD Temperature (ºC)", y = "KD time (min)") + theme(
+        axis.ticks.x=element_blank(),legend.position="bottom",
+        axis.ticks.y=element_blank(),panel.background = element_blank(),
+        panel.grid.major = element_blank(),panel.grid.minor =
+          element_blank(),axis.text=element_text(size=9),text=element_text(size=15))+geom_smooth(method="auto", se=F)
+slowoverview
+
+#Slow ramp HS based on line
+q<- ggplot(slowdat,aes(x=dat.kd_temp,y=dat.time, colour=dat.line))+geom_point()+
+  labs(x = "KD Temperature (ºC)", y = "KD time (min)") + theme(
+        axis.ticks.x=element_blank(),legend.position="bottom",
+        axis.ticks.y=element_blank(),panel.background = element_blank(),
+        panel.grid.major = element_blank(),panel.grid.minor =
+          element_blank(),axis.text=element_text(size=9),text=element_text(size=15))+geom_smooth(method="auto", se=F)
+slowfig <- q + scale_colour_discrete(name = "lines")
+slowfig
+
+#Overview of fast ramp
+fastdat <- df%>%
+  filter(dat$treatment == "fast")
+
+fastoverview <- ggplot(fastdat,aes(x=dat.kd_temp,y=dat.time))+geom_point()+
+  labs(x = "KD Temperature (ºC)", y = "KD time (min)") + theme(
+        axis.ticks.x=element_blank(),legend.position="bottom",
+        axis.ticks.y=element_blank(),panel.background = element_blank(),
+        panel.grid.major = element_blank(),panel.grid.minor =
+          element_blank(),axis.text=element_text(size=9),text=element_text(size=15))+geom_smooth(method="auto", se=F)
+fastoverview
+
+#Fast ramp HS based on line
+r<- ggplot(fastdat,aes(x=dat.kd_temp,y=dat.time, colour=dat.line))+geom_point()+
+  labs(x = "KD Temperature (ºC)", y = "KD time (min)") + theme(
+        axis.ticks.x=element_blank(),legend.position="bottom",
+        axis.ticks.y=element_blank(),panel.background = element_blank(),
+        panel.grid.major = element_blank(),panel.grid.minor =
+          element_blank(),axis.text=element_text(size=9),text=element_text(size=15))+geom_smooth(method="auto", se=F)
+fastfig <- r + scale_colour_discrete(name = "lines")
+fastfig
 ```
-
-
 
 # Session Info
 ```{r}
