@@ -18,6 +18,7 @@ library(tidyr)
 library(data.table)
 ```
 
+# Obtaining the data from Github
 ```{r}
 dat<-fread("https://raw.githubusercontent.com/HannahHChu/Proteome_stability_project/master/Data/2018-06-21_thermal_assays_masterdatasheet.csv")
 
@@ -37,16 +38,25 @@ dat$time<-time
 
 # Creating the Data Frame
 ```{r}
-df<-data.frame(dat$kd_temp, dat$time, dat$treatment, dat$line)
+df<-data.frame(dat$kd_temp, dat$time, dat$treatment, dat$line, dat$sex)
 
 #filtering out the non-static practice trials
 staths<- df%>%
           filter(dat$treatment == "static")
 ```
 
+# ANOVA
+```{r} 
+fit<-aov(dat.time ~ dat.kd_temp*dat.line, staths)
+summary(fit)
+```
+The ANOVA doesn't indicate a relationship between the different lines and KD temperature. The only significant variable is KD temperature, which means we can reject the null hypothesis that there are equal means for KD temperature.
+
+
 # Figures
+
+## Overview of static HS
 ```{r}
-#Overview of static HS 
 staticoverview <- ggplot(staths,aes(x=dat.kd_temp,y=dat.time))+geom_point()+
   labs(x = "KD Temperature (ºC)", y = "KD time (min)") + theme(
         axis.ticks.x=element_blank(),legend.position="bottom",
@@ -54,8 +64,11 @@ staticoverview <- ggplot(staths,aes(x=dat.kd_temp,y=dat.time))+geom_point()+
         panel.grid.major = element_blank(),panel.grid.minor =
           element_blank(),axis.text=element_text(size=9),text=element_text(size=15))+geom_smooth(method="auto", se=F)
 staticoverview 
+```
+Overall, it looks like as flies reach their upper thermal limit, their tolerance range narrows. The shape of the graph suggests that there is more variation at lower temperatures. 
 
-#Static HS based on line
+## Static HS based on lines
+```{r}
 p<- ggplot(staths,aes(x=dat.kd_temp,y=dat.time, colour=dat.line))+geom_point()+
   labs(x = "KD Temperature (ºC)", y = "KD time (min)") + theme(
         axis.ticks.x=element_blank(),legend.position="bottom",
@@ -64,48 +77,35 @@ p<- ggplot(staths,aes(x=dat.kd_temp,y=dat.time, colour=dat.line))+geom_point()+
           element_blank(),axis.text=element_text(size=9),text=element_text(size=15))+geom_smooth(method="auto", se=F)
 fig <- p + scale_colour_discrete(name = "lines")
 fig
+```
 
-#Overview of slow ramp
+
+## Slow ramp HS based on lines
+```{r}
 slowdat <- df%>%
   filter(dat$treatment == "slow", dat$kd_temp > "37")
 
-slowoverview <- ggplot(slowdat,aes(x=dat.kd_temp,y=dat.time))+geom_point()+
-  labs(x = "KD Temperature (ºC)", y = "KD time (min)") + theme(
-        axis.ticks.x=element_blank(),legend.position="bottom",
-        axis.ticks.y=element_blank(),panel.background = element_blank(),
-        panel.grid.major = element_blank(),panel.grid.minor =
-          element_blank(),axis.text=element_text(size=9),text=element_text(size=15))+geom_smooth(method="auto", se=F)
-slowoverview
-
-#Slow ramp HS based on line
 q<- ggplot(slowdat,aes(x=dat.kd_temp,y=dat.time, colour=dat.line))+geom_point()+
   labs(x = "KD Temperature (ºC)", y = "KD time (min)") + theme(
         axis.ticks.x=element_blank(),legend.position="bottom",
         axis.ticks.y=element_blank(),panel.background = element_blank(),
         panel.grid.major = element_blank(),panel.grid.minor =
-          element_blank(),axis.text=element_text(size=9),text=element_text(size=15))+geom_smooth(method="auto", se=F)
+          element_blank(),axis.text=element_text(size=9),text=element_text(size=15))
 slowfig <- q + scale_colour_discrete(name = "lines")
 slowfig
+```
 
-#Overview of fast ramp
+## Fast ramp HS based on line
+```{r}
 fastdat <- df%>%
   filter(dat$treatment == "fast")
 
-fastoverview <- ggplot(fastdat,aes(x=dat.kd_temp,y=dat.time))+geom_point()+
-  labs(x = "KD Temperature (ºC)", y = "KD time (min)") + theme(
-        axis.ticks.x=element_blank(),legend.position="bottom",
-        axis.ticks.y=element_blank(),panel.background = element_blank(),
-        panel.grid.major = element_blank(),panel.grid.minor =
-          element_blank(),axis.text=element_text(size=9),text=element_text(size=15))+geom_smooth(method="auto", se=F)
-fastoverview
-
-#Fast ramp HS based on line
 r<- ggplot(fastdat,aes(x=dat.kd_temp,y=dat.time, colour=dat.line))+geom_point()+
   labs(x = "KD Temperature (ºC)", y = "KD time (min)") + theme(
         axis.ticks.x=element_blank(),legend.position="bottom",
         axis.ticks.y=element_blank(),panel.background = element_blank(),
         panel.grid.major = element_blank(),panel.grid.minor =
-          element_blank(),axis.text=element_text(size=9),text=element_text(size=15))+geom_smooth(method="auto", se=F)
+          element_blank(),axis.text=element_text(size=9),text=element_text(size=15))
 fastfig <- r + scale_colour_discrete(name = "lines")
 fastfig
 ```
