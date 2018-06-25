@@ -50,8 +50,7 @@ staths<- df%>%
 fit<-aov(dat.time ~ dat.kd_temp*dat.line, staths)
 summary(fit)
 ```
-The ANOVA doesn't indicate a relationship between the different lines and KD temperature. The only significant variable is KD temperature, which means we can reject the null hypothesis that there are equal means for KD temperature.
-
+ANOVA was done to determine whether there were significant differences in KD time at each temperature. The ANOVA doesn't indicate a relationship between the different lines and KD temperature. The only significant variable is KD temperature, which means we can reject the null hypothesis that there are equal means for KD temperature.
 
 # Figures
 
@@ -107,7 +106,7 @@ r<- ggplot(fastdat,aes(x=dat.kd_temp,y=dat.time, colour=dat.line))+geom_point()+
         panel.grid.major = element_blank(),panel.grid.minor =
           element_blank(),axis.text=element_text(size=9),text=element_text(size=15))
 fastfig <- r + scale_colour_discrete(name = "lines")
-fastfig
+fastfig 
 ```
 
 # Session Info
