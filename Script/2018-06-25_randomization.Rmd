@@ -1,0 +1,54 @@
+---
+title: "2018-06-25_Randomization"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+# Randomizing samples
+
+```{r}
+
+strains<-c("AB8","A5","A7","A2","B6","B7","A4","A6","A3","B2","B3","A1","B4")
+cohort<-sort(rep(seq(1,10,1),13))
+
+dat<-data.frame(cohort=rep(cohort,4),strain=rep(strains,40))
+dim(dat)
+
+
+
+dat2<-dat%>%
+  group_by(cohort,strain)%>%
+  #summarise(n=length(cohort))
+  mutate(treatment=sample(c("FR","SR","SHS","HH")))
+
+dat2$treatment<-as.factor(dat2$treatment)
+
+
+### arrange the cohrot and treatment
+dat3<-dat2%>%
+  arrange(cohort,treatment)
+
+vec<-data.frame(replicate(40,sample(seq(1,13,1))))
+dat3$position<-gather(vec,num,position,X1:X40)[,2]
+
+dat3<-dat3%>%
+  arrange(strain,treatment)
+summary(dat3)
+
+sex.vec<-c(rep("M",5),rep("F",5))
+
+sf<-data.frame(replicate(52,sample(sex.vec)))
+dat3$sex<-gather(sf,num,sex,X1:X52)[,2]
+
+dat3<-dat3%>%arrange(cohort,treatment)
+fwrite(dat3,"../Data/2018-06-25_randomization_HS.csv")
+
+
+fwrite(data.frame(replicate(10,sample(c("FR","SR","SHS","HH")))),"../Data/2018-06-25_treatment_randomization.csv")
+
+```
+
+sample size? 
+
+13 strains x 5 cohorts x 2 sexes x 4 treatments  = 50 
