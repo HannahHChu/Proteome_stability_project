@@ -47,6 +47,20 @@ fwrite(dat3,"../Data/2018-06-25_randomization_HS.csv")
 
 fwrite(data.frame(replicate(10,sample(c("FR","SR","SHS","HH")))),"../Data/2018-06-25_treatment_randomization.csv")
 
+dat3$sex<-as.factor(dat3$sex)
+
+dat3%>%
+  group_by(strain,treatment)%>%
+  filter(sex=="M")%>%
+  summarise(length(sex))
+
+dat3%>%
+  group_by(strain,treatment)%>%
+  filter(sex=="F")%>%
+  summarise(length(sex))
+  
+
+#summarise(length(sex))
 ```
 
 sample size? 
