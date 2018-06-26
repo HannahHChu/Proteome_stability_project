@@ -1,0 +1,72 @@
+---
+title: "Cohort Setup for Thermal Assays"
+author: "Hannah Chu"
+date: '2018-06-25'
+output:
+  pdf_document:
+    number_sections: yes
+    toc: yes
+  prettydoc::html_pretty:
+    theme: architect
+    toc: yes
+fontsize: 18pt
+always_allow_html: yes
+---
+# Model
+
+* Drosophila melanogaster
+* Mated
+* 10 cohorts
+* 520 individuals
+    * 260 male
+    * 260 female
+
+# Workflow
+
+![Workflow](/Users/Pikachu/Desktop/Proteome_stability_project/2018-06-25_workflow)
+
+* One cohort per day
+* 4 different treatments per day for all 13 lines
+* 50/50 male and female based on cohort, strain, and treatment
+* Position, sex, and treatment all randomized
+
+```{r}
+library(DiagrammeR)
+mermaid("
+  graph TD
+  A[Cohort Days]--> B[Slow Ramp]
+  A --> C[Fast Ramp]
+  A --> D[Hardening]
+  A --> E[Static]
+  B --> F[13 lines]
+  C --> G[13 lines]
+  D --> H[13 lines]
+  E --> I[13 lines]
+  F --> J[Female]
+  G --> K[Female]
+  H --> L[Female]
+  I --> M[Female]
+  F --> N[Male]
+  G --> O[Male]
+  H --> P[Male]
+  I --> Q[Male]")
+```
+
+# Cohort Setup
+Keep 3 rearing vials and 1 "fresh" vial for replicates
+
+* 1 old vial (backup)
+* 1 middle vial (backup)
+* 1 new vial (backup)
+* 1 exp. vial
+    * dump the adults and wait for newly eclosed adults
+    * flip newly eclosed adults into fresh vial consecutive days
+    * keep fresh vials for 5 days before using for tests
+
+# Measure
+
+1. Knockdown times
+    * based on [thermal assay protocol here](https://adnguyen.github.io/Hahn_lab_protocols/2018-06-14_HC_Thermal_Hardiness_Assays_in_D_melanogaster.html)
+2. Survivorship
+    * after flies knockdown, move them into 5mL plastic tubes with food
+    * monitor every day for individual fly death 
