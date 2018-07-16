@@ -8,16 +8,34 @@ library(tidyr)
 library(data.table)
 library(dplyr)
 library(ggplot2)
+library(lubridate)
 
 dat <- fread("https://raw.githubusercontent.com/HannahHChu/Proteome_stability_project/master/Data/2018-07-01_HS_datasheet.csv")
 
 #glimpse(dat)
 
-df<- data.frame(dat$cohort, dat$strain, dat$treatment, dat$position, dat$sex, dat$kd_time, dat$kd_temp, dat$surv_days)
+tt <- dat$kd_time
+time<-lubridate::minute(ms(tt))+lubridate::second(ms(tt))/60
+stime<-scale(time, center = TRUE, scale = TRUE)
+stemp<-scale(dat$kd_temp, center = TRUE, scale = TRUE)
+
+sdf<-data.frame(stime, stemp)
+
+df<- data.frame(dat$cohort, dat$strain, dat$treatment, dat$position, dat$sex, stime, stemp, dat$surv_days)
 
 
-  
+dat2 <- df%>%ac
+  group_by(dat$cohort, dat$treatment)%>%
+  mutate(.,stime.trans=seq(from = max(stime, na.rm=TRUE), to = min(stime, na.rm=TRUE), length.out = length(dat$date)))
+glimpse(dat2)
+df$stime[1:13,]<- df$stemp[1:13,]
 
+
+df$stime[1:13, 40:91, 118:169, 196:247, 274:325, 352:403, 430:481] <- df$stemp[1:13, 40:91, 118:169, 196:247, 274:325, 352:403, 430:481]
+
+
+A1SHSf<- df%>%
+        filter(dat$treatment == "SHS", dat$strain == "A1")
 
 
 
