@@ -1,0 +1,24 @@
+---
+title: "Data Analysis"
+output: html_document
+---
+
+```{r}
+library(tidyr)
+library(data.table)
+library(dplyr)
+library(ggplot2)
+
+dat <- fread("https://raw.githubusercontent.com/HannahHChu/Proteome_stability_project/master/Data/2018-07-01_HS_datasheet.csv")
+
+#glimpse(dat)
+
+df<- data.frame(dat$cohort, dat$strain, dat$treatment, dat$position, dat$sex, dat$kd_time, dat$kd_temp, dat$surv_days)
+
+
+  
+
+
+
+
+```
