@@ -12,31 +12,129 @@ library(lubridate)
 
 dat <- fread("https://raw.githubusercontent.com/HannahHChu/Proteome_stability_project/master/Data/2018-07-01_HS_datasheet.csv")
 
+dat <- fread("../Data/2018-07-01_HS_datasheet.csv")
 #glimpse(dat)
 
+#converting min:sec to min
 tt <- dat$kd_time
 time<-lubridate::minute(ms(tt))+lubridate::second(ms(tt))/60
-stime<-scale(time, center = TRUE, scale = TRUE)
-stemp<-scale(dat$kd_temp, center = TRUE, scale = TRUE)
+glimpse(time)
+#scaling time & temp
 
-sdf<-data.frame(stime, stemp)
-
-df<- data.frame(dat$cohort, dat$strain, dat$treatment, dat$position, dat$sex, stime, stemp, dat$surv_days)
-
-
-dat2 <- df%>%ac
-  group_by(dat$cohort, dat$treatment)%>%
-  mutate(.,stime.trans=seq(from = max(stime, na.rm=TRUE), to = min(stime, na.rm=TRUE), length.out = length(dat$date)))
+dat$time <- time
+dat2 <- dat%>%
+  group_by(treatment)%>%
+  filter(treatment != "CC") %>%
+  mutate(scaled_time = scale(time))
 glimpse(dat2)
-df$stime[1:13,]<- df$stemp[1:13,]
+
+dat3 <- dat2%>%
+  group_by(treatment)%>%
+  mutate(scaled_temp = scale(kd_temp))
+glimpse(dat3)
+
+#filtering
+dat4 <- dat3%>%
+  filter(treatment != "HH" & treatment!="SHS" & treatment != "CC")
+
+dat4$scaled <- dat4$scaled_temp
+
+dat5 <- dat3%>%
+  filter(treatment != "FR" & treatment != "SR" & treatment != "CC")
+  
+dat5$scaled <- dat5$scaled_time
+
+dat6 <- rbind(dat5, dat4)
+dim(dat3)
+glimpse(dat6)
+
+#visualizing variation between sexes
+ggplot(dat6, aes(x= treatment, y = scaled, color = sex)) + geom_boxplot()
+ggplot(dat6, aes(x= treatment, y = scaled, color = sex)) + geom_violin()
 
 
-df$stime[1:13, 40:91, 118:169, 196:247, 274:325, 352:403, 430:481] <- df$stemp[1:13, 40:91, 118:169, 196:247, 274:325, 352:403, 430:481]
+mod1<-aov(scaled~treatment*linelet/strain* sex , data = dat6)
+summary(mod1)
+
+# mixed effects model to determine the amount of variance per treatment among strains
+
+mmod1<-lmer(formula=scaled~1+(0+treatment|strain)+(1|cohort),data=dat6)
+
+summary(mmod1)
+
+variance<- VarCorr(mmod1)$strain
+pc<-princomp(variance[1:4,1:4])
+summary(pc)
+pc$loadings[,1:2]
 
 
-A1SHSf<- df%>%
-        filter(dat$treatment == "SHS", dat$strain == "A1")
+#global model evaulting treatment x strain x sex interaction
+mmod2<-lmer(formula=scaled~treatment*strain*sex+(1|cohort),data=dat6)
+summary(mmod2)
+
+dat6%>%
+  filter(strain == "A1"| strain == "AB8"| strain == "A7" | strain == "B7")
+  
+
+ggplot(dat6, aes(x=treatment, y=scaled)) + geom_boxplot() + facet_wrap(~strain)
+ggplot(dat6, aes(x=treatment, y=scaled, color=sex)) + geom_boxplot() + facet_wrap(~strain)
+
+################################################
+## determining if we have the right sample sizes
+numbers<-dat6%>%
+  group_by(strain, treatment, sex)%>%
+  filter(cohort!=11)%>%
+  summarise(n=length(strain))
+
+fwrite(numbers,"2018-07-18_sample_sizes_9cohorts.csv")
+
+################################################
 
 
+# lets set up a model to determine sex effects speficialyl regardless of strain
+mmod3<-lmer(formula=scaled~treatment*sex+(1|cohort)+(1|strain),data=dat6)
+summary(mmod3)
+
+ggplot(dat6,aes(x=sex,y=scaled))+geom_boxplot()+ylab("Overall Scaled Thermal Hardiness")
+
+#ggplot(dat6,aes(x=sex,y=scaled))+geom_violin()+ylab("Overall Scaled Thermal Hardiness")
+
+#explore population level differences
+dat6$linelet <- ifelse(substr(dat6$strain,1,1)=="A","A","B")
+
+AB8<-dat6%>%
+  filter(strain=="AB8")
+AB8$linelet<-rep("B",length(AB8$linelet))
+
+dat6.2<-rbind(dat6,AB8)
+
+ggplot(dat6.2, aes(x=treatment, y = scaled, color = linelet)) + geom_boxplot()
+
+
+```
+
+
+### pca vignette
+
+```{r}
+a<-rnorm(mean=0,sd=1,100)
+b<-rnorm(mean=0,sd=1,100)
+c<-rnorm(mean=0,sd=1,100)
+ind<-seq(1,100,1)
+
+d<-data.frame(ind,a,b,c)
+d
+
+
+g<-princomp(d[,2:4])
+
+g$loadings[,1:2]
+
+g$scores[1:2,1:2]
+
+
+d[1,2:4]
+
+pc1_for_ind1= (0.9626112606* 0.3718173) + (-0.2708851786* -0.992188)+ (0.0008837983*-2.33112)
 
 ```
