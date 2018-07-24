@@ -18,7 +18,7 @@ dat <- fread("../Data/2018-07-01_HS_datasheet.csv")
 #converting min:sec to min
 tt <- dat$kd_time
 time<-lubridate::minute(ms(tt))+lubridate::second(ms(tt))/60
-glimpse(time)
+
 #scaling time & temp
 
 dat$time <- time
@@ -26,12 +26,12 @@ dat2 <- dat%>%
   group_by(treatment)%>%
   filter(treatment != "CC") %>%
   mutate(scaled_time = scale(time))
-glimpse(dat2)
+#glimpse(dat2)
 
 dat3 <- dat2%>%
   group_by(treatment)%>%
   mutate(scaled_temp = scale(kd_temp))
-glimpse(dat3)
+#glimpse(dat3)
 
 #filtering
 dat4 <- dat3%>%
@@ -46,12 +46,14 @@ dat5$scaled <- dat5$scaled_time
 
 dat6 <- rbind(dat5, dat4)
 dim(dat3)
-glimpse(dat6)
+#glimpse(dat6)
 
 #visualizing variation between sexes
 ggplot(dat6, aes(x= treatment, y = scaled, color = sex)) + geom_boxplot()
 ggplot(dat6, aes(x= treatment, y = scaled, color = sex)) + geom_violin()
 
+#explore population level differences
+dat6$linelet <- ifelse(substr(dat6$strain,1,1)=="A","A","B")
 
 mod1<-aov(scaled~treatment*linelet/strain* sex , data = dat6)
 summary(mod1)
@@ -59,7 +61,6 @@ summary(mod1)
 # mixed effects model to determine the amount of variance per treatment among strains
 
 mmod1<-lmer(formula=scaled~1+(0+treatment|strain)+(1|cohort),data=dat6)
-
 summary(mmod1)
 
 variance<- VarCorr(mmod1)$strain
@@ -71,19 +72,30 @@ pc$loadings[,1:2]
 #global model evaulting treatment x strain x sex interaction
 mmod2<-lmer(formula=scaled~treatment*strain*sex+(1|cohort),data=dat6)
 summary(mmod2)
+#mmod2.1<-lmer(formula=scaled~treatment*strain+(1|cohort),data=dat6)
+#anova(mmod2,mmod2.1)
 
 dat6%>%
   filter(strain == "A1"| strain == "AB8"| strain == "A7" | strain == "B7")
-  
-
+ 
 ggplot(dat6, aes(x=treatment, y=scaled)) + geom_boxplot() + facet_wrap(~strain)
 ggplot(dat6, aes(x=treatment, y=scaled, color=sex)) + geom_boxplot() + facet_wrap(~strain)
+
+
+#Filter out SHS treatment to explore strain by sex differences
+dat7 <- dat6%>%
+  filter(treatment == "SHS")
+
+mmod3<-lmer(formula=scaled~strain*sex+(1|cohort),data=dat7)
+summary(mmod3)
+
+ggplot(dat7, aes(x=sex, y=scaled, color=strain)) + geom_boxplot() + facet_wrap(~strain)
+ggplot(dat7, aes(x=treatment, y=scaled, color=sex)) + geom_boxplot() + facet_wrap(~strain)
 
 ################################################
 ## determining if we have the right sample sizes
 numbers<-dat6%>%
   group_by(strain, treatment, sex)%>%
-  filter(cohort!=11)%>%
   summarise(n=length(strain))
 
 fwrite(numbers,"2018-07-18_sample_sizes_9cohorts.csv")
@@ -91,11 +103,15 @@ fwrite(numbers,"2018-07-18_sample_sizes_9cohorts.csv")
 ################################################
 
 
-# lets set up a model to determine sex effects speficialyl regardless of strain
-mmod3<-lmer(formula=scaled~treatment*sex+(1|cohort)+(1|strain),data=dat6)
-summary(mmod3)
+# lets set up a model to determine sex effects speficially regardless of strain
+mmod4<-lmer(formula=scaled~treatment*sex+(1|cohort)+(1|strain),data=dat6)
+summary(mmod4)
 
-ggplot(dat6,aes(x=sex,y=scaled))+geom_boxplot()+ylab("Overall Scaled Thermal Hardiness")
+ggplot(dat6,aes(x=sex,y=scaled, color= sex))+geom_boxplot()+ylab("Overall Scaled Thermal Hardiness")+ xlab("Sex") + theme(
+        legend.position=("none"),
+        panel.grid.minor = element_blank(),axis.text=element_text(size=9),text=element_text(size=11))
+
+
 
 #ggplot(dat6,aes(x=sex,y=scaled))+geom_violin()+ylab("Overall Scaled Thermal Hardiness")
 
@@ -109,6 +125,11 @@ AB8$linelet<-rep("B",length(AB8$linelet))
 dat6.2<-rbind(dat6,AB8)
 
 ggplot(dat6.2, aes(x=treatment, y = scaled, color = linelet)) + geom_boxplot()
+
+#model
+mmod4<-lmer(formula=scaled~treatment*linelet+(1|cohort)+(1|strain),data=dat6.2)
+summary(mmod4)
+
 
 
 ```
