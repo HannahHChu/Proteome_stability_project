@@ -1,6 +1,8 @@
 ---
 title: "Data Analysis"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r}
@@ -71,26 +73,43 @@ pc$loadings[,1:2]
 
 #global model evaulting treatment x strain x sex interaction
 mmod2<-lmer(formula=scaled~treatment*strain*sex+(1|cohort),data=dat6)
+#mmod2<-lmer(formula=scaled~treatment*strain+(1|cohort),data=dat6)
 summary(mmod2)
 #mmod2.1<-lmer(formula=scaled~treatment*strain+(1|cohort),data=dat6)
 #anova(mmod2,mmod2.1)
-
-dat6%>%
-  filter(strain == "A1"| strain == "AB8"| strain == "A7" | strain == "B7")
  
 ggplot(dat6, aes(x=treatment, y=scaled)) + geom_boxplot() + facet_wrap(~strain)
 ggplot(dat6, aes(x=treatment, y=scaled, color=sex)) + geom_boxplot() + facet_wrap(~strain)
 
 
-#Filter out SHS treatment to explore strain by sex differences
-dat7 <- dat6%>%
+#Filter out treatments to explore strain by sex differences
+dat7.SHS <- dat6%>%
   filter(treatment == "SHS")
+mmodSHS<-lmer(formula=scaled~strain*sex+(1|cohort),data=dat7.SHS)
+summary(mmodSHS)
+ggplot(dat7.SHS, aes(x=sex, y=scaled, color=strain)) + geom_boxplot() + facet_wrap(~strain)
+ggplot(dat7.SHS, aes(x=treatment, y=scaled, color=sex)) + geom_boxplot() + facet_wrap(~strain)
 
-mmod3<-lmer(formula=scaled~strain*sex+(1|cohort),data=dat7)
-summary(mmod3)
+dat7.SR <- dat6%>%
+  filter(treatment == "SR")
+mmodSR<-lmer(formula=scaled~strain*sex+(1|cohort),data=dat7.SR)
+summary(mmodSR)
+ggplot(dat7.SR, aes(x=sex, y=scaled, color=strain)) + geom_boxplot() + facet_wrap(~strain)
+ggplot(dat7.SR, aes(x=treatment, y=scaled, color=sex)) + geom_boxplot() + facet_wrap(~strain)
 
-ggplot(dat7, aes(x=sex, y=scaled, color=strain)) + geom_boxplot() + facet_wrap(~strain)
-ggplot(dat7, aes(x=treatment, y=scaled, color=sex)) + geom_boxplot() + facet_wrap(~strain)
+dat7.HH <- dat6%>%
+  filter(treatment == "HH")
+mmodHH<-lmer(formula=scaled~strain*sex+(1|cohort),data=dat7.HH)
+summary(mmodHH)
+ggplot(dat7.HH, aes(x=sex, y=scaled, color=strain)) + geom_boxplot() + facet_wrap(~strain)
+ggplot(dat7.HH, aes(x=treatment, y=scaled, color=sex)) + geom_boxplot() + facet_wrap(~strain)
+
+dat7.FR <- dat6%>%
+  filter(treatment == "FR")
+mmodFR<-lmer(formula=scaled~strain*sex+(1|cohort),data=dat7.SR)
+summary(mmodFR)
+ggplot(dat7.FR, aes(x=sex, y=scaled, color=strain)) + geom_boxplot() + facet_wrap(~strain)
+ggplot(dat7.SR, aes(x=treatment, y=scaled, color=sex)) + geom_boxplot() + facet_wrap(~strain)
 
 ################################################
 ## determining if we have the right sample sizes
@@ -131,6 +150,31 @@ mmod4<-lmer(formula=scaled~treatment*linelet+(1|cohort)+(1|strain),data=dat6.2)
 summary(mmod4)
 
 
+#Filtering out FR
+
+FRdat <- dat%>%
+  filter(treatment == "FR" | treatment == "HH")
+
+FRdat$time<- minute(ms(FRdat$kd_time))+second(ms(FRdat$kd_time))/60
+  
+ggplot(FRdat, aes(strain, time)) + geom_boxplot()
+
+ggplot(FRdat, aes(strain, kd_temp)) + geom_boxplot()
+
+FRdat%>%
+  group_by(strain)%>%
+  summarize(mean=mean(time, na.rm=T))
+
+
+
+SRdat <- dat%>%
+  filter(treatment == "SR" | treatment == "SHS")
+
+SRdat$time<- minute(ms(FRdat$kd_time))+second(ms(FRdat$kd_time))/60
+  
+ggplot(SRdat, aes(strain, time)) + geom_boxplot()
+
+ggplot(SRdat, aes(strain, kd_temp)) + geom_boxplot()
 
 ```
 
