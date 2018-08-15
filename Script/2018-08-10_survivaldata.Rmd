@@ -1,0 +1,123 @@
+---
+title: "PS_survivaldata"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
+  word_document:
+    toc: yes
+---
+
+# Libraries
+```{r}
+library(survival)
+library(ggpubr)
+library(survminer)
+library(magrittr)
+library(ggplot2)
+library(tidyr)
+library(dplyr) #data parsing library
+library(data.table) #data parsing library mainly for reading and writing out
+library(DiagrammeR) #figure aesthetics
+library(MASS) #Functions and datasets to support
+library(BBmisc) #Miscellaneous functions
+library(gridExtra) #figure aesthetics
+library(coxme)
+
+```
+
+# Data Analysis 
+
+## Cox Regression
+```{r}
+
+#Obtain data
+dat<- read.csv("/Users/Pikachu/Desktop/Proteome_stability_project/Data/2018-07-01_HS_datasheet.csv")
+
+###glimpse(dat)
+###names(dat)
+
+#Assign censored data and create new column
+dat$status[dat$surv_days != "NA"] <- 1
+
+#Mixed Effect model - strain as random effect
+cox <- coxme(Surv(surv_days, status) ~ sex*treatment + (1|strain) , data = dat)
+summary(cox)
+
+#non-mixed effect model -- for figure
+#coxp <- coxph(Surv(surv_days, status) ~ sex*treatment, data = dat)
+#summary(coxp)
+
+#cox_fit <- survfit(coxp)
+#ggsurvplot(cox_fit, data = dat, risk.table = TRUE, pval = TRUE)
+
+
+```
+
+
+## Kaplan-Meier Survival Estimate
+```{r}
+
+#filter out treatments
+HHdat <- dat%>%
+      filter(treatment == "HH")
+
+SHSdat <- dat%>%
+      filter(treatment == "SHS")
+
+FRdat <- dat%>%
+      filter(treatment == "FR")
+
+SRdat <- dat%>%
+      filter(treatment == "SR")
+
+noCCdat <- dat%>%
+  filter(treatment != "CC")
+
+#compute kaplan-Meier survival estimate-so compute the survival probability by:
+  #fit1 computes survival probability by sex
+fit1 <- survfit(Surv(surv_days, status) ~ sex, data = dat)
+print(fit1)
+
+# Access to the sort summary table
+summary(fit1)$table
+
+
+# Visualize curves (Change color, linetype by strata, risk.table color by strata)
+ggsurvplot(fit1,
+          pval = TRUE, conf.int = TRUE,
+          risk.table = TRUE, # Add risk table
+          risk.table.col = "strata", # Change risk table color by groups
+          linetype = c("dashed","solid"), 
+          surv.median.line = "hv", # Specify median survival
+          ggtheme = theme_bw(), # Change ggplot2 theme
+          palette = c("#DB3A17","#204A87"),
+          xlab = "Lifespan in days",
+          ylab = "Proportion Surviving",
+          legend.title = "Conditions",
+          pval.size=4)
+
+  #fit2 computes survival probability by treatment
+
+fit2 <- survfit(Surv(surv_days, status) ~ treatment, data = noCCdat)
+print(fit2)
+
+# Access to the sort summary table
+summary(fit2)$table
+
+
+# Visualize curves (Change color, linetype by strata, risk.table color by strata)
+ggsurvplot(fit2,
+          pval = TRUE, conf.int = F,
+          risk.table = TRUE, # Add risk table
+          risk.table.col = "strata", # Change risk table color by groups
+          linetype = c("solid", "dashed", "dashed", "solid"), 
+          surv.median.line = "hv", # Specify median survival
+          ggtheme = theme_bw(), # Change ggplot2 theme
+          palette = c("#DB3A17","#204A87", "#267E13", "#341078"),
+          xlab = "Lifespan in days",
+          ylab = "Proportion Surviving",
+          legend.title = "Conditions",
+          pval.size=4)
+```
