@@ -1,0 +1,288 @@
+<?php
+header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+header("Cache-Control: no-store, no-cache, must-revalidate");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
+// Start session.
+session_start();
+
+$login_required = false;
+
+// Set a key, checked in mailer, prevents against spammers trying to hijack the mailer.
+$_SESSION['text_value'] = 'makesuresessionsareenabled';
+if ( ! isset($_SESSION['form_message'])) {
+	$_SESSION['form_message'] = 'Fill out the form:';
+}
+
+// will not set footer  ( or header ) in a session var
+if ( ! isset($_SESSION['formFooter'])) {
+	$_SESSION['formFooter'] = '';
+}
+
+// set up container array
+if ( ! isset($_SESSION['form'])) {
+	$_SESSION['form'] = array();
+}
+
+function check($field, $type = '', $value = '', $default = '') {
+	$string = '';
+
+	switch($type) {
+		case 'checkbox':
+			if (isset($_SESSION['form'][$field])) {
+				if(in_array($value, $_SESSION['form'][$field])) { $string = 'checked="checked"'; }
+			}else{
+				// see if this is a default
+				if(isset($default) && $default == 'checked') { $string = 'checked="checked"'; }
+			}
+			break;
+		case 'multi-select':
+			if (isset($_SESSION['form'][$field])) {
+				if(in_array($value, $_SESSION['form'][$field])) { $string = 'selected="selected"'; }
+			}else{
+				// see if this is a default
+				if(isset($default) && $default == 'selected') { $string = 'selected="selected"'; }
+			}
+			break;
+		case 'radio':
+			if (isset($_SESSION['form'][$field])) {
+				if($_SESSION['form'][$field] === $value) { $string = 'checked="checked"'; }
+			}else{
+				if(isset($default) && $default == 'checked') { $string = 'checked="checked"'; }
+			}
+			break;
+		case 'select':
+			if (isset($_SESSION['form'][$field])) {
+				if($_SESSION['form'][$field] === $value) { $string = 'selected="selected"'; }
+			}else{
+				if(isset($default) && $default == 'selected') { $string = 'selected="selected"'; }
+			}
+			break;
+		default:
+			if(isset($default) && !isset($_SESSION['form'][$field])) {
+				$string = $default;
+			}else{
+				$string = $_SESSION['form'][$field];
+			}
+	}
+	return $string;
+ }
+ ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="generator" content="RapidWeaver" />
+
+		<title>Request Flies</title>
+		<link rel="stylesheet" type="text/css" media="screen" href="../rw_common/themes/cameo/styles.css"  />
+		<!--[if lte IE 7]><link rel="stylesheet" type="text/css" media="screen" href="../rw_common/themes/cameo/css/ie/ie.css"  /><![endif]-->
+		<!--[if IE 6]><link rel="stylesheet" type="text/css" media="screen" href="../rw_common/themes/cameo/css/ie/ie6.css"  /><![endif]-->
+		<link rel="stylesheet" type="text/css" media="screen" href="../rw_common/themes/cameo/colourtag-theme-default.css"  />
+		<link rel="stylesheet" type="text/css" media="print" href="../rw_common/themes/cameo/print.css"  />
+		<link rel="stylesheet" type="text/css" media="handheld" href="../rw_common/themes/cameo/handheld.css"  />
+		<link rel="stylesheet" type="text/css" media="screen" href="../rw_common/themes/cameo/css/width/800.css" />
+		<link rel="stylesheet" type="text/css" media="screen" href="../rw_common/themes/cameo/css/icons/blue.css" />
+		<link rel="stylesheet" type="text/css" media="screen" href="../rw_common/themes/cameo/css/sidebar/sidebar_hide.css" />
+
+
+
+
+		<script type="text/javascript" src="../rw_common/themes/cameo/javascript.js"></script>
+
+
+<!--[if IE 6]><script type="text/javascript" charset="utf-8">
+			var blankSrc = "../rw_common/themes/cameo/png/blank.gif";
+		</script>
+		<style type="text/css">
+
+		img {
+			behavior:	url("../rw_common/themes/cameo/png/pngbehavior.htc");
+		}
+
+		</style><![endif]-->
+
+		<script type='text/javascript' charset='utf-8' src='http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js'></script>
+<script type="text/javascript" src="files/formloom-page4.js"></script>
+<script type="text/javascript" src="files/jquery.datepicker.js"></script>
+<link rel='stylesheet' type='text/css' media='all' id="formloom-page4-css" href='files/formloom-page4.css?v=78' />
+
+
+	</head>
+<body>
+<div id="container"><!-- Start container -->
+	<div id="pageHeader"><!-- Start page header -->
+		<div id="grad">
+			<img src="../rw_common/themes/cameo/images/header_bottom_grad.png" alt="" style="width: 3000px; height: 66px;" />
+		</div>
+
+		<h1>DSPR: The Drosophila Synthetic Population Resource</h1>
+		<h2>A Powerful Tool for the Genetic Analysis of Complex Traits</h2>
+	</div><!-- End page header -->
+	<div id="navcontainer"><!-- Start Navigation -->
+		<div id="top_grad">
+			<img src="../rw_common/themes/cameo/images/menu_top_grad.png" alt="" style="width: 3000px; height: 32px;" />
+		</div>
+		<ul><li><a href="../index.html" rel="self">DSPR</a></li><li><a href="index.php" rel="self" id="current">Request Flies</a></li><li><a href="../Data/index.html" rel="self">Data</a></li><li><a href="../Publications/index.html" rel="self">Publications</a></li><li><a href="../People/index.html" rel="self">People</a></li><li><a href="../Projects/index.html" rel="self">Projects</a></li><li><a href="../Tools/index.html" rel="self">Tools</a></li><li><a href="../Links/index.html" rel="self">Links</a></li></ul>
+		<div class="clearer"></div>
+	</div><!-- End navigation -->
+	<div id="sidebarContainer"><!-- Start Sidebar wrapper -->
+		<div id="sidebar"><!-- Start sidebar content -->
+			<h1 class="sideHeader"></h1><!-- Sidebar header -->
+			<!-- sidebar content you enter in the page inspector -->
+			 <!-- sidebar content such as the blog archive links -->
+		</div><!-- End sidebar content -->
+	</div><!-- End sidebar wrapper -->
+	<div id="contentContainer"><!-- Start main content wrapper -->
+		<div id="content"><!-- Start content -->
+
+
+<!--// Form Built With FormLoom 2.0.6 (258) by Yabdab Inc. //-->
+
+<div id="formloom-page4">
+<div class="fl-header">
+<h1>Request Flies</h1><br /><span style="color:#000000;">To request the RILs  and founder lines, use the form below. You may request multiple sets of lines using a single form.  You may wish to check the </span><span style="color:#000000;"><a href="../riltable/index.html" rel="self" title="RIL Info Table">RIL Info Table</a></span><span style="color:#000000;"> for the status of individual lines. The following sets of lines are available:<br /></span><ul class="disc"><li><span style="color:#000000;">Founder Lines</span></li></ul><ul><ul>The 15 Founder Lines detailed <a href="../RILs/index.html" rel="external" title="General Information">here</a>. Two of the original founder lines (A1 and B5) used to create the DSPR have been lost. The progenitor of A1 was obtained from Bloomington (stock number 64349), and subjected to low pass genome sequencing to ensure identity with founder A1. This new stock will be shipped if founder A1 is requested, however users should expect some small differences. Founder B5 is no longer available.</ul></ul>
+<ul class="disc"><li><span style="color:#000000;">Founder+ Set</span></li></ul><ul><ul>The 15 Founder Lines, 12 population A RILs and 12 population B RILs</ul></ul>
+<ul class="disc"><li><span style="color:#000000;">Population A RILs (Release 2 consists of 892 A RILs)</span></li><li><span style="color:#000000;">Population B RILs (Release 2 consists of 867 A RILs)</span></li><li><span style="color:#000000;">Small Set </span></li></ul><ul><ul>100 lines from each subpopulation (text file of RIL ids in the small set <a href="http://wfitch.bio.uci.edu/~dspr/DatFILES/SmallSet.txt" rel="self">here</a>)</ul></ul>
+<ul class="disc"><li><span style="color:#000000;">Custom Set</span></li></ul><ul><ul>Specify any set of population A and/or population B RILs</ul></ul><br /><br /><span style="color:#000000;"> </span>If you have trouble with this form or have questions about the DSPR, contact  <a href="mailto:flyrils@gmail.com">DSPR(flyrils@gmail.com)</a>
+
+</div>
+<div class="fl-message-text"><?php echo $_SESSION['form_message']; unset($_SESSION['form_message']); ?></div><br />
+
+<form action="./files/formloom-page4.php" method="post" enctype="multipart/form-data">
+<?php if($login_required && !$_SESSION['logged_in']) {  ?>
+
+<div class="fl-row yd-clearfix"><div class="fl-col">
+<ul>
+	<li><label>Your Username</label><input type="text" name="fl_username" /></li>
+	<li><label>Your Password</label><input type="password" name="fl_password" /></li>
+</ul>
+<input type="hidden" name="fl_userlogin" value="true" /><br />
+<input type="submit" value="Login" />
+</div></div>
+
+<?php }else{ ?>
+
+<div class="fl-row yd-clearfix">
+<div class="fl-col" id="fl-page4-item-col1">
+<ul>
+
+<li id="fl-page4-1">
+<label>Email Address <span class="ydfl-required-symbol">*</span></label>
+<input type="text" name="form[item_1]" id="fl-page4-item-1" class="fl-text required" value="<?php echo @check('item_1','text','',''); ?>" style="width:400px;" />
+</li>
+
+<li id="fl-page4-2">
+<label>Your Name <span class="ydfl-required-symbol">*</span></label>
+<input type="text" name="form[item_2]" id="fl-page4-item-2" class="fl-text required" value="<?php echo @check('item_2','text','',''); ?>" style="width:400px;" />
+</li>
+
+<li id="fl-page4-3">
+<label>Institution <span class="ydfl-required-symbol">*</span></label>
+<input type="text" name="form[item_3]" id="fl-page4-item-3" class="fl-text required" value="<?php echo @check('item_3','text','',''); ?>" style="width:400px;" />
+</li>
+
+<li id="fl-page4-12">
+<label>Telephone Number <span class="ydfl-required-symbol">*</span></label>
+<input type="text" name="form[item_12]" id="fl-page4-item-12" class="fl-text required" value="<?php echo @check('item_12','text','',''); ?>" style="width:400px;" />
+</li>
+
+<li id="fl-page4-11">
+<label>Shipping Address <span class="ydfl-required-symbol">*</span></label>
+<textarea name="form[item_11]" rows="10" cols="40" id="fl-page4-item-11" class="fl-textarea required" style="width:400px;"><?php echo @check('item_11', 'textarea', '', ''); ?></textarea>
+</li>
+
+<li class="fl-formbreak">
+<div style="width:400px; display:block;">
+<span style="color:#FF0000;">Please provide any details on desired method of shipping below. Provide a Fedex/UPS account number if possible. If you are outside the US, please provide any instructions that must be observed to ensure the package gets through customs.</span>
+</div>
+</li>
+
+<li id="fl-page4-13">
+<label>Shipping Instructions</label>
+<textarea name="form[item_13]" rows="10" cols="40" id="fl-page4-item-13" class="fl-textarea" style="width:400px;"><?php echo @check('item_13', 'textarea', '', ''); ?></textarea>
+</li>
+
+<li id="fl-page4-4" style="width:400px;">
+<label>This request is for: <span class="ydfl-required-symbol">*</span></label>
+<span class="fl-checkbox"  style="display:block;"><input <?php echo @check('item_4', 'checkbox', 'Founders', ''); ?> type="checkbox" name="form[item_4][]" class=" required" value="Founders" /> Founders </span>
+<span class="fl-checkbox"  style="display:block;"><input <?php echo @check('item_4', 'checkbox', 'Founders+', ''); ?> type="checkbox" name="form[item_4][]" class=" required" value="Founders+" /> Founders+ </span>
+<span class="fl-checkbox"  style="display:block;"><input <?php echo @check('item_4', 'checkbox', 'RILs', ''); ?> type="checkbox" name="form[item_4][]" class=" required" value="RILs" /> RILs </span>
+
+<br /><span class="fl-subtext">All requests for RILs must specify the requested set below.</span>
+</li>
+
+<li id="fl-page4-6" style="width:400px;">
+<label>Population A RILs</label>
+<span class="fl-radio"  style="display:block;"><input <?php echo @check('item_6', 'radio', 'Complete Set', ''); ?> type="radio" name="form[item_6]" class="" value="Complete Set" /> Complete Set </span>
+<span class="fl-radio"  style="display:block;"><input <?php echo @check('item_6', 'radio', 'Small Set', ''); ?> type="radio" name="form[item_6]" class="" value="Small Set" /> Small Set </span>
+<span class="fl-radio"  style="display:block;"><input <?php echo @check('item_6', 'radio', 'Custom Set', ''); ?> type="radio" name="form[item_6]" class="" value="Custom Set" /> Custom Set </span>
+<span class="fl-radio"  style="display:block;"><input <?php echo @check('item_6', 'radio', 'I am not requesting Population A RILs', ''); ?> type="radio" name="form[item_6]" class="" value="I am not requesting Population A RILs" /> I am not requesting Population A RILs </span>
+</li>
+
+<li id="fl-page4-7" style="width:400px;">
+<label>Population B RILs</label>
+<span class="fl-radio"  style="display:block;"><input <?php echo @check('item_7', 'radio', 'Complete Set', ''); ?> type="radio" name="form[item_7]" class="" value="Complete Set" /> Complete Set </span>
+<span class="fl-radio"  style="display:block;"><input <?php echo @check('item_7', 'radio', 'Small Set', ''); ?> type="radio" name="form[item_7]" class="" value="Small Set" /> Small Set </span>
+<span class="fl-radio"  style="display:block;"><input <?php echo @check('item_7', 'radio', 'Custom Set', ''); ?> type="radio" name="form[item_7]" class="" value="Custom Set" /> Custom Set </span>
+<span class="fl-radio"  style="display:block;"><input <?php echo @check('item_7', 'radio', 'I am not requesting Population B RILs', ''); ?> type="radio" name="form[item_7]" class="" value="I am not requesting Population B RILs" /> I am not requesting Population B RILs </span>
+
+<br /><span class="fl-subtext">Any custom set request must include instructions below.</span>
+</li>
+
+<li id="fl-page4-8">
+<label>Special Instructions</label>
+<textarea name="form[item_8]" rows="10" cols="40" id="fl-page4-item-8" class="fl-textarea" style="width:400px;"><?php echo @check('item_8', 'textarea', '', 'Type message here.'); ?></textarea>
+</li>
+
+<li id="fl-page4-10">
+<label for="#">Type the words below</label>
+	<div id="recaptcha">
+	<script type="text/javascript">
+	var RecaptchaOptions = {
+		theme: 'red',
+		lang: 'en'
+	};
+</script>
+<script type="text/javascript" src="http://www.google.com/recaptcha/api/challenge?k=6LcJG8ESAAAAAH8FTVf0Sq8ePv8ienj8iGW7woC2"></script>
+<noscript>
+<iframe src="http://www.google.com/recaptcha/api/noscript?k=6LcJG8ESAAAAAH8FTVf0Sq8ePv8ienj8iGW7woC2" height="300" width="500" frameborder="0"></iframe><br/>
+<textarea name="recaptcha_challenge_field" rows="3" cols="40"></textarea>
+<input type="hidden" name="recaptcha_response_field" value="manual_challenge"/>
+</noscript>
+
+</div>
+</li>
+
+<li id="fl-page4-5">
+<input type="submit" id="fl-page4-item-5" class="fl-submit" style="width:200px;" value="Submit" />
+</li>
+
+<li id="fl-page4-9">
+<input type="reset" id="fl-page4-item-9" class="fl-reset" style="width:200px;" value="Reset Form" />
+</li>
+</ul>
+</div>
+</div>
+
+<?php } ?>
+
+</form>
+
+<div class="clearer"></div>
+<?php unset($_SESSION['form']); ?>
+</div><!-- formloom-wrapper -->
+
+
+		</div><!-- End content -->
+		<div class="clearer"></div>
+	</div><!-- End main content wrapper -->
+	<div id="footer"><!-- Start Footer -->
+		<p></p>
+		<div id="breadcrumbcontainer"><!-- Start the breadcrumb wrapper -->
+
+		</div><!-- End breadcrumb -->
+	</div><!-- End Footer -->
+</div><!-- End container -->
+</body>
+</html>
